@@ -26,20 +26,20 @@ import kr.co.test.app.rest.login.model.JwtAuthenticationToken;
 
 public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessingFilter {
 	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	private static final String DEFAULT_FILTER_PROCESSES_URL = "/api/**";
 	
 	public JwtAuthenticationTokenFilter() {
 		super(DEFAULT_FILTER_PROCESSES_URL);
 	}
-
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+	
 	@Value("#{jwt['jwt.tokenType']}")
 	private String tokenType;
 	
 	@Value("#{jwt['jwt.header']}")
 	private String header;
-	
+
 	@Autowired
 	private JwtTokenComponent jwtTokenComponent;
 	
@@ -47,7 +47,7 @@ public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessi
 	protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
 		return true;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -58,7 +58,7 @@ public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessi
 		ResultSetMap resMap = new ResultSetMap();
 		String sMessage = "";
 		
-		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding(Constants.UTF8);
 		
@@ -90,9 +90,6 @@ public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessi
 				resMap.put(Constants.RESP.RESP_CD, ResponseCode.TOKEN_EXPIRED.getCode());
 				resMap.put(Constants.RESP.RESP_MSG, ResponseCode.TOKEN_EXPIRED.getMessage());
 				
-				sMessage = JacksonUtil.converterMapToJsonStr(resMap);
-				response.getWriter().write(sMessage);
-				
 			} catch (Exception e) {
 				logger.error("", e);
 				resMap.put(Constants.RESP.RESP_CD, ResponseCode.FFFFF.getCode());
@@ -104,7 +101,6 @@ public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessi
 				response.getWriter().write(sMessage);				
 			}
 		}
-		
 		return this.getAuthenticationManager().authenticate(jwtAuthenticationToken);
 	}
 

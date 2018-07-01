@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import common.spring.resolver.ParamCollector;
+import common.util.ArrayUtil;
 import common.util.map.ResultSetMap;
 import kr.co.test.app.common.Constants;
 import kr.co.test.app.common.ResponseCode;
@@ -73,12 +74,11 @@ public class ManagerValidtion {
 						break;
 					case 1:
 						String[] sSrchGbns = {"id", "name", "all"};
-						for (String sGbn : sSrchGbns) {
-							if ( !paramCollector.getString(key).equals(sGbn) ) {
-								resMap.put(Constants.RESP.RESP_CD, ResponseCode.F0005.getCode());
-								resMap.put(Constants.RESP.RESP_MSG, ResponseCode.F0005.getMessage(requiredSrchMsgPrefix2[i]));
-								break;
-							}
+						List<String> srchGbns = ArrayUtil.arrayToList(sSrchGbns);
+						if ( !srchGbns.contains( paramCollector.getString(key) ) ) {
+							resMap.put(Constants.RESP.RESP_CD, ResponseCode.F0005.getCode());
+							resMap.put(Constants.RESP.RESP_MSG, ResponseCode.F0005.getMessage(requiredSrchMsgPrefix2[i]));
+							break;
 						}
 						break;
 					case 2:

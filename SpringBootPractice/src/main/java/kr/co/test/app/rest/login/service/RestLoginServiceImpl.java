@@ -49,7 +49,7 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
 		
 		String username = paramCollector.getString(Constants.ID_PWD.USERNAME);
         String password = paramCollector.getString(Constants.ID_PWD.PASSWORD);
-        String decryptPwd = this.decryptRsa(password);
+//        String decryptPwd = this.decryptRsa(password);
         
 		AuthenticatedUser user = null;
 		
@@ -60,7 +60,7 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
 				throw new RuntimeException("계정정보 없음");
 			}
 			
-        	if ( !passwordEncoder.matches(decryptPwd, user.getPassword()) ) {
+        	if ( !passwordEncoder.matches(password, user.getPassword()) ) {
         		throw new BadCredentialsException("비밀번호 불일치");
         	}
         	
