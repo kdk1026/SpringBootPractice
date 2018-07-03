@@ -46,8 +46,10 @@ public class Constants {
 		public static final String ENABLED = "enabled";
 	}
 	
-	public static class ETC {
-		public static final String SCOPE = "scope";
+	public static class Jwt {
+		public static final String TOKEN = "token";
+		public static final String ACCESS_TOKEN = "AccessToken";
+		public static final String REFRESH_TOKEN = "RefreshToken";
 	}
 	
 }

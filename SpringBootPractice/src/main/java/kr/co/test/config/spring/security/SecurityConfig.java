@@ -1,9 +1,12 @@
 package kr.co.test.config.spring.security;
 
+import java.util.Properties;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -15,79 +18,85 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
+import common.spring.RestCorsConfig;
 import kr.co.test.app.page.login.security.PageAuthenticationProvider;
+import kr.co.test.app.rest.login.security.JwtAuthenticationFilter;
+import kr.co.test.app.rest.login.security.JwtTokenProvider;
+import kr.co.test.app.rest.login.security.entrypoint.RestAuthenticationEntryPoint;
+import kr.co.test.app.rest.login.security.handler.RestAccessDeniedHandler;
+import kr.co.test.app.rest.login.security.handler.RestLogoutSuccessHandler;
+import kr.co.test.app.rest.login.service.RestLoginService;
 
-@Configuration
+//@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class SecurityConfig {
 	
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
+	
+	@Order(1)
+	@Configuration
+	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+		
+		public ApiWebSecurityConfigurationAdapter() {
+			super();
+		}
+		
+		@Autowired
+		private JwtTokenProvider jwtTokenProvider; 
+		
+		@Autowired
+		private RestLoginService restLoginService;
+		
+		@Value("#{jwt}")
+		private Properties jwtProp;
+		
+		@Override
+		public void configure(WebSecurity web) throws Exception {
+			web.ignoring()
+				.antMatchers("/api/login/auth")
+				.antMatchers("/api/login/refresh");
+		}
+		
+		@Override
+		protected void configure(HttpSecurity http) throws Exception {
+			http.antMatcher("/api/**")
+				.authorizeRequests()
+				.anyRequest().authenticated();
+			
+			http.sessionManagement()
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+			
+			http.headers()
+				.cacheControl();
 
-	// TODO : SpringBoot Security 이슈 1개만 인식되는 듯
-//	@Order(1)
-//	@Configuration
-//	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
-//		
-//		public ApiWebSecurityConfigurationAdapter() {
-//			super();
-//		}
-//		
-//		@Override
-//		public void configure(WebSecurity web) throws Exception {
-//			web.ignoring()
-//				.antMatchers("/api/login/auth");
-//		}
-//		
-//		@Override
-//		protected void configure(HttpSecurity http) throws Exception {
-//			http.antMatcher("/api/**")
-//				.authorizeRequests()
-//				.anyRequest().authenticated();			
-//			
-//			http.sessionManagement()
-//				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//			
-//			http.headers()
-//				.cacheControl();
-//
-//			http.csrf().disable();
-//
-//			http.formLogin().disable();
-//
-//			http.logout()
-//				.logoutUrl("/api/logout")
-//				.logoutSuccessHandler(new RestLogoutSuccessHandler());
-//
-//			http.exceptionHandling()
-//				.authenticationEntryPoint(new RestAuthenticationEntryPoint())
-//				.accessDeniedHandler(new RestAccessDeniedHandler());
-//
-//			http.addFilterBefore( this.jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class );
-//			
-//			http.cors().configurationSource(RestCorsConfig.configurationSource());
-//		}
-//		
-//		@Override
-//		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//			auth.authenticationProvider(new JwtAuthenticationProvider());
-//		}
-//		
-//		@Bean
-//		public JwtAuthenticationTokenFilter jwtAuthenticationFilter() throws Exception {
-//			JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter = new JwtAuthenticationTokenFilter();
-//			
-//			jwtAuthenticationTokenFilter.setAuthenticationManager(this.authenticationManager());
-//			jwtAuthenticationTokenFilter.setAuthenticationSuccessHandler(new JwtAuthenticationSuccessHandler());
-//			return jwtAuthenticationTokenFilter;
-//		}
-//	}
+			http.csrf().disable();
+
+			http.formLogin().disable();
+
+			http.logout()
+				.logoutUrl("/api/logout")
+				.logoutSuccessHandler(new RestLogoutSuccessHandler());
+
+			http.exceptionHandling()
+				.authenticationEntryPoint(new RestAuthenticationEntryPoint())
+				.accessDeniedHandler(new RestAccessDeniedHandler());
+
+			JwtAuthenticationFilter jwtAuthFilter 
+				= new JwtAuthenticationFilter(jwtTokenProvider, restLoginService, jwtProp);
+			
+			http.addFilterBefore( jwtAuthFilter, UsernamePasswordAuthenticationFilter.class );
+			
+			http.cors().configurationSource(RestCorsConfig.configurationSource());
+		}
+	}
 	
 	@Order(2)
 	@Configuration

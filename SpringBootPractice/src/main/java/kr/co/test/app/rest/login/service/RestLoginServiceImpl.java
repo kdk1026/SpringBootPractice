@@ -1,6 +1,5 @@
 package kr.co.test.app.rest.login.service;
 
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,18 +14,14 @@ import org.springframework.stereotype.Service;
 
 import common.LogDeclare;
 import common.spring.resolver.ParamCollector;
-import common.util.crypto.RsaCryptoUtil;
-import common.util.crypto.RsaCryptoUtil.Generate;
 import common.util.date.Jsr310DateUtil;
-import common.util.file.FileUtil;
 import common.util.map.ResultSetMap;
-import io.jsonwebtoken.Claims;
 import kr.co.test.app.common.Constants;
 import kr.co.test.app.common.ResponseCode;
 import kr.co.test.app.page.login.model.AuthenticatedUser;
 import kr.co.test.app.page.login.service.UserService;
-import kr.co.test.app.rest.login.security.JwtTokenComponent;
-import kr.co.test.app.rest.login.security.JwtTokenComponent.JwtToken;
+import kr.co.test.app.rest.login.security.JwtTokenProvider;
+import kr.co.test.app.rest.login.security.JwtTokenProvider.JwtToken;
 
 @Service
 public class RestLoginServiceImpl extends LogDeclare implements RestLoginService {
@@ -38,18 +33,18 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
 	private BCryptPasswordEncoder passwordEncoder;
 	
 	@Autowired
-	private JwtTokenComponent jwtTokenComponent;
+	private JwtTokenProvider jwtTokenProvider;
 	
 	@Value("#{jwt}")
 	private Properties jwtProp;
 	
 	@Override
-	public ResultSetMap processAuth(ParamCollector paramCollector) {
+	public ResultSetMap processAuthByUsername(ParamCollector paramCollector) {
 		ResultSetMap resMap = new ResultSetMap();
 		
 		String username = paramCollector.getString(Constants.ID_PWD.USERNAME);
         String password = paramCollector.getString(Constants.ID_PWD.PASSWORD);
-//        String decryptPwd = this.decryptRsa(password);
+        // XXX : 비밀번호 구간 암호화 시, 복호화 처리
         
 		AuthenticatedUser user = null;
 		
@@ -70,9 +65,11 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
     			return resMap;
         	}
         	
-        	JwtToken jwtToken = jwtTokenComponent.generateToken(user);
-    		Date date = jwtTokenComponent.getExpirationTime(Integer.parseInt(jwtProp.getProperty("jwt.accessExpireHour")));
-    		
+        	JwtToken jwtToken = jwtTokenProvider.generateToken(user);
+        	
+        	String sAccessToken = jwtToken.accessToken;
+        	Date date = jwtTokenProvider.getExpirationFromJwt(sAccessToken);
+        	
     		resMap.put("token_type", jwtProp.getProperty("jwt.tokenType"));
     		resMap.put("access_token", jwtToken.accessToken);
     		resMap.put("expires_in", (date.getTime() / 1000));
@@ -98,63 +95,62 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
 	}
 
 	@Override
+	public AuthenticatedUser processAuthByToken(ParamCollector paramCollector) {
+		String username = paramCollector.getString(Constants.ID_PWD.USERNAME);
+		
+		return (AuthenticatedUser) userService.loadUserByUsername(username);
+	}
+
+	@Override
 	public ResultSetMap processRefresh(ParamCollector paramCollector) {
 		ResultSetMap resMap = new ResultSetMap();
 		
-		String header = jwtProp.getProperty("jwt.header");
-		String tokenType = jwtProp.getProperty("jwt.tokenType");
+		String sGrantType = paramCollector.getString("grant_type");
+		String sRefreshToken = paramCollector.getString("refresh_token");
 		
-		String sHeader = paramCollector.getRequest().getHeader(header);
-		String sToken = sHeader.substring(tokenType.length());
-		
-		Claims clams = null;
-		AuthenticatedUser user = null;
+		if ( !"refresh_token".equals(sGrantType) ) {
+			resMap.put(Constants.RESP.RESP_CD, ResponseCode.INVALID_TOKEN.getCode());
+			resMap.put(Constants.RESP.RESP_MSG, ResponseCode.INVALID_TOKEN.getMessage());
+			return resMap;
+		}
 		
 		try {
-			clams = jwtTokenComponent.parseToken(sToken);
-			user = jwtTokenComponent.parseClaims(clams);
-			user.setAuthorities(userService.getAuthorities(user.getUsername()));
+			String username = jwtTokenProvider.getUsernameFromJwt(sRefreshToken);
+			paramCollector.put(Constants.ID_PWD.USERNAME, username);
+			
+			AuthenticatedUser user = this.processAuthByToken(paramCollector);
 			
 			JwtToken jwtToken = new JwtToken();
-			jwtToken.accessToken = jwtTokenComponent.generateAccessToken(user);
+        	jwtToken.accessToken = jwtTokenProvider.generateAccessToken(user);
 			
-			Date date = jwtTokenComponent.getExpirationTime(Integer.parseInt(jwtProp.getProperty("jwt.accessExpireHour")));
-    		resMap.put("token_type", jwtProp.getProperty("jwt.tokenType"));
-    		resMap.put("access_token", jwtToken.accessToken);
-    		resMap.put("expires_in", (date.getTime() / 1000));
+			Date date = jwtTokenProvider.getExpirationFromJwt(sRefreshToken);
 			
-			Date expireDate = clams.getExpiration();
-			String sExpireDate = Jsr310DateUtil.Convert.getDateToString(expireDate);
-			int nGap = Jsr310DateUtil.GetDateInterval.intervalDays(sExpireDate);
+			resMap.put("token_type", jwtProp.getProperty("jwt.tokenType"));
+			resMap.put("access_token", jwtToken.accessToken);
+			resMap.put("expires_in", (date.getTime() / 1000));
 			
+			jwtToken.refreshToken = jwtTokenProvider.generateRefreshToken(user);
+			
+    		String sExpireDate = Jsr310DateUtil.Convert.getDateToString(date);
+    		int nGap = Jsr310DateUtil.GetDateInterval.intervalDays(sExpireDate);
+    		
+    		logger.debug("Refresh Token Expire Today Gap is {}", nGap);
+    		
 			if (nGap >= -7 && nGap <= 0) {
-				jwtToken.refreshToken = jwtTokenComponent.generateRefreshToken(user);
+				jwtToken.refreshToken = jwtTokenProvider.generateRefreshToken(user);
 				resMap.put("refresh_token", jwtToken.refreshToken);
 			}
 			
+    		resMap.put(Constants.RESP.RESP_CD, ResponseCode.S0000.getCode());
+    		resMap.put(Constants.RESP.RESP_MSG, ResponseCode.S0000.getMessage());
+			
 		} catch (Exception e) {
 			logger.error("", e);
+			resMap.put(Constants.RESP.RESP_CD, ResponseCode.FFFFF.getCode());
+			resMap.put(Constants.RESP.RESP_MSG, ResponseCode.FFFFF.getMessage());
 		}
 		
 		return resMap;
-	}
-	
-	private String decryptRsa(String password) {
-		String sDestFilePath = "C:/test/rsa";
-		String sPublicKeyFileName = "public.key";
-		String sPrivateKeyFileName = "private.key";
-		String sPrivateSignFileName = "private.sig";
-		
-		byte[] encodedPublicKey = FileUtil.convertFileToBytes(sDestFilePath + FileUtil.FOLDER_SEPARATOR + sPublicKeyFileName);
-		byte[] encodedPrivateKey = FileUtil.convertFileToBytes(sDestFilePath + FileUtil.FOLDER_SEPARATOR + sPrivateKeyFileName);
-		
-		String decryptText = RsaCryptoUtil.Decrypt.decrypt(password, encodedPrivateKey);
-		String sSign = FileUtil.readFile(sDestFilePath + FileUtil.FOLDER_SEPARATOR + sPrivateSignFileName);
-		
-		PublicKey publicKey = Generate.generatePublicKey(encodedPublicKey);
-		boolean isVerify = RsaCryptoUtil.verifySignature(decryptText, sSign, publicKey);
-		
-		return (isVerify) ? decryptText : "";
 	}
 	
 }

@@ -1,7 +1,6 @@
 package kr.co.test.app.rest.login.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,10 +18,9 @@ public class RestLoginController extends LogDeclare {
 	
 	@RequestMapping("/auth")
 	public ResultSetMap auth(ParamCollector paramCollector) {
-		return restLoginService.processAuth(paramCollector);
+		return restLoginService.processAuthByUsername(paramCollector);
 	}
 	
-	@Secured ({"ROLE_REFRESH_TOKEN"})
 	@RequestMapping("/refresh")
 	public ResultSetMap refresh(ParamCollector paramCollector) {
 		return restLoginService.processRefresh(paramCollector);
