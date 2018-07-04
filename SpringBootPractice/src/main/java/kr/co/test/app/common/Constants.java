@@ -50,6 +50,7 @@ public class Constants {
 		public static final String TOKEN = "token";
 		public static final String ACCESS_TOKEN = "AccessToken";
 		public static final String REFRESH_TOKEN = "RefreshToken";
+		public static final String SCOPE = "scope";
 	}
 	
 }

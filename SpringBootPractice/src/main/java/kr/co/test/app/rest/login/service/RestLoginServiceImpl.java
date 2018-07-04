@@ -1,16 +1,14 @@
 package kr.co.test.app.rest.login.service;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import common.LogDeclare;
 import common.spring.resolver.ParamCollector;
@@ -75,13 +73,6 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
     		resMap.put("expires_in", (date.getTime() / 1000));
     		resMap.put("refresh_token", jwtToken.refreshToken);
     		
-    		List<String> listAuthority = new ArrayList<String>();
-    		List<GrantedAuthority> authorities = (List<GrantedAuthority>) user.getAuthorities();
-    		for (GrantedAuthority auth : authorities) {
-    			listAuthority.add(auth.getAuthority());
-    		}
-    		resMap.put("scope", listAuthority);
-    		
     		resMap.put(Constants.RESP.RESP_CD, ResponseCode.S0000.getCode());
     		resMap.put(Constants.RESP.RESP_MSG, ResponseCode.S0000.getMessage());
 			
@@ -108,41 +99,60 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
 		String sGrantType = paramCollector.getString("grant_type");
 		String sRefreshToken = paramCollector.getString("refresh_token");
 		
-		if ( !"refresh_token".equals(sGrantType) ) {
+		// 1. 파라미터 유효성 체크
+		if ( !"refresh_token".equals(sGrantType) || StringUtils.isEmpty(sRefreshToken) ) {
 			resMap.put(Constants.RESP.RESP_CD, ResponseCode.INVALID_TOKEN.getCode());
 			resMap.put(Constants.RESP.RESP_MSG, ResponseCode.INVALID_TOKEN.getMessage());
 			return resMap;
 		}
 		
 		try {
-			String username = jwtTokenProvider.getUsernameFromJwt(sRefreshToken);
-			paramCollector.put(Constants.ID_PWD.USERNAME, username);
-			
-			AuthenticatedUser user = this.processAuthByToken(paramCollector);
-			
-			JwtToken jwtToken = new JwtToken();
-        	jwtToken.accessToken = jwtTokenProvider.generateAccessToken(user);
-			
-			Date date = jwtTokenProvider.getExpirationFromJwt(sRefreshToken);
-			
-			resMap.put("token_type", jwtProp.getProperty("jwt.tokenType"));
-			resMap.put("access_token", jwtToken.accessToken);
-			resMap.put("expires_in", (date.getTime() / 1000));
-			
-			jwtToken.refreshToken = jwtTokenProvider.generateRefreshToken(user);
-			
-    		String sExpireDate = Jsr310DateUtil.Convert.getDateToString(date);
-    		int nGap = Jsr310DateUtil.GetDateInterval.intervalDays(sExpireDate);
-    		
-    		logger.debug("Refresh Token Expire Today Gap is {}", nGap);
-    		
-			if (nGap >= -7 && nGap <= 0) {
-				jwtToken.refreshToken = jwtTokenProvider.generateRefreshToken(user);
-				resMap.put("refresh_token", jwtToken.refreshToken);
+			// 2. 토큰 유효성 검증
+			switch ( jwtTokenProvider.isValidateToken(sRefreshToken) ) {
+			case 0:
+				resMap.put(Constants.RESP.RESP_CD, ResponseCode.INVALID_TOKEN.getCode());
+				resMap.put(Constants.RESP.RESP_MSG, ResponseCode.INVALID_TOKEN.getMessage());				
+				break;
+			case 2:
+				resMap.put(Constants.RESP.RESP_CD, ResponseCode.TOKEN_EXPIRED.getCode());
+				resMap.put(Constants.RESP.RESP_MSG, ResponseCode.TOKEN_EXPIRED.getMessage());				
+				break;
+
+			default:
+				break;
 			}
 			
-    		resMap.put(Constants.RESP.RESP_CD, ResponseCode.S0000.getCode());
-    		resMap.put(Constants.RESP.RESP_MSG, ResponseCode.S0000.getMessage());
+			if ( resMap.isEmpty() ) {
+				// 3. 토큰에서 로그인 정보 추출
+				AuthenticatedUser user = jwtTokenProvider.getAuthUserFromJwt(sRefreshToken);
+				
+				// 4. 토큰 갱신
+				// 4.1. Access 토큰 갱신
+				JwtToken jwtToken = new JwtToken();
+	        	jwtToken.accessToken = jwtTokenProvider.generateAccessToken(user);
+	        	
+	        	Date date = jwtTokenProvider.getExpirationFromJwt(sRefreshToken);
+	        	
+				resMap.put("token_type", jwtProp.getProperty("jwt.tokenType"));
+				resMap.put("access_token", jwtToken.accessToken);
+				resMap.put("expires_in", (date.getTime() / 1000));
+				
+				// 4.2. Refresh 토큰 갱신 조건 검증
+	    		String sExpireDate = Jsr310DateUtil.Convert.getDateToString(date);
+	    		int nGap = Jsr310DateUtil.GetDateInterval.intervalDays(sExpireDate);
+	    		
+				if (nGap >= -7 && nGap <= 0) {
+					// 4.2.1. 충족 시, Refresh 토큰 갱신 응답
+					jwtToken.refreshToken = jwtTokenProvider.generateRefreshToken(user);
+					resMap.put("refresh_token", jwtToken.refreshToken);
+				} else {
+					// 4.2.2. 미충족 시, 파라미터 응답
+					resMap.put("refresh_token", sRefreshToken);
+				}
+				
+	    		resMap.put(Constants.RESP.RESP_CD, ResponseCode.S0000.getCode());
+	    		resMap.put(Constants.RESP.RESP_MSG, ResponseCode.S0000.getMessage());
+			}
 			
 		} catch (Exception e) {
 			logger.error("", e);

@@ -29,7 +29,6 @@ import kr.co.test.app.rest.login.security.JwtTokenProvider;
 import kr.co.test.app.rest.login.security.entrypoint.RestAuthenticationEntryPoint;
 import kr.co.test.app.rest.login.security.handler.RestAccessDeniedHandler;
 import kr.co.test.app.rest.login.security.handler.RestLogoutSuccessHandler;
-import kr.co.test.app.rest.login.service.RestLoginService;
 
 //@Configuration
 @EnableWebSecurity
@@ -51,9 +50,6 @@ public class SecurityConfig {
 		
 		@Autowired
 		private JwtTokenProvider jwtTokenProvider; 
-		
-		@Autowired
-		private RestLoginService restLoginService;
 		
 		@Value("#{jwt}")
 		private Properties jwtProp;
@@ -90,7 +86,7 @@ public class SecurityConfig {
 				.accessDeniedHandler(new RestAccessDeniedHandler());
 
 			JwtAuthenticationFilter jwtAuthFilter 
-				= new JwtAuthenticationFilter(jwtTokenProvider, restLoginService, jwtProp);
+				= new JwtAuthenticationFilter(jwtTokenProvider, jwtProp);
 			
 			http.addFilterBefore( jwtAuthFilter, UsernamePasswordAuthenticationFilter.class );
 			
