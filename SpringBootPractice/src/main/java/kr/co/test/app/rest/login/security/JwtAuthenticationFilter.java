@@ -1,7 +1,6 @@
 package kr.co.test.app.rest.login.security;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -24,11 +23,9 @@ import kr.co.test.app.page.login.model.AuthenticatedUser;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	
 	private JwtTokenProvider jwtTokenProvider; 
-	private Properties jwtProp;
 	
-	public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, Properties jwtProp) {
+	public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
 		this.jwtTokenProvider = jwtTokenProvider;
-		this.jwtProp = jwtProp;
 	}
 
 	@Override
@@ -38,12 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		ResultSetMap resMap = new ResultSetMap();
 		
 		// 1. 헤더에서 토큰 가져오기
-		String sToken = null;
-		String sJwtHeader = request.getHeader(jwtProp.getProperty("jwt.header"));
-		if ( sJwtHeader.startsWith(jwtProp.getProperty("jwt.tokenType")) ) {
-			sToken = sJwtHeader.substring(jwtProp.getProperty("jwt.tokenType").length());
-		}
-		
+		String sToken = jwtTokenProvider.getTokenFromReqHeader(request);
 		if ( StringUtils.isEmpty(sToken) ) {
 			resMap.put(Constants.RESP.RESP_CD, ResponseCode.INVALID_TOKEN.getCode());
 			resMap.put(Constants.RESP.RESP_MSG, ResponseCode.INVALID_TOKEN.getMessage());
@@ -52,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			AuthenticatedUser user = null;
 			
 			// 2. 토큰 유효성 검증
-			switch ( jwtTokenProvider.isValidateToken(sToken) ) {
+			switch ( jwtTokenProvider.isValidateJwtToken(sToken) ) {
 			case 0:
 				resMap.put(Constants.RESP.RESP_CD, ResponseCode.INVALID_TOKEN.getCode());
 				resMap.put(Constants.RESP.RESP_MSG, ResponseCode.INVALID_TOKEN.getMessage());				

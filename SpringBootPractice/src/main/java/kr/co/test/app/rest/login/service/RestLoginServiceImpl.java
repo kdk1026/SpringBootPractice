@@ -108,7 +108,7 @@ public class RestLoginServiceImpl extends LogDeclare implements RestLoginService
 		
 		try {
 			// 2. 토큰 유효성 검증
-			switch ( jwtTokenProvider.isValidateToken(sRefreshToken) ) {
+			switch ( jwtTokenProvider.isValidateJwtToken(sRefreshToken) ) {
 			case 0:
 				resMap.put(Constants.RESP.RESP_CD, ResponseCode.INVALID_TOKEN.getCode());
 				resMap.put(Constants.RESP.RESP_MSG, ResponseCode.INVALID_TOKEN.getMessage());				

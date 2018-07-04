@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,25 +39,49 @@ public class JwtTokenProvider {
 		public String refreshToken;
 	}
 	
-	public Date getExpirationTime(String sExpireIn) {
+	/**
+	 * 헤더에서 JWT 토큰 추출 
+	 * @param request
+	 * @return
+	 */
+	public String getTokenFromReqHeader(HttpServletRequest request) {
+		String sToken = null;
+		String sBearer = request.getHeader(jwtProp.getProperty("jwt.header"));
+		if ( sBearer.startsWith(jwtProp.getProperty("jwt.tokenType")) ) {
+			sToken = sBearer.substring(jwtProp.getProperty("jwt.tokenType").length());
+		}
+		return sToken;
+	}
+	
+	/**
+	 * JWT 토큰 생성
+	 * @param user
+	 * @return
+	 * @throws Exception
+	 */
+	public JwtToken generateToken(AuthenticatedUser user) throws Exception {
+		JwtToken jwtToken = new JwtToken();
+		jwtToken.accessToken = this.generateAccessToken(user);
+		jwtToken.refreshToken = this.generateRefreshToken(user);
+		return jwtToken; 
+	}
+	
+	/**
+	 * 만료일 계산
+	 * @param sExpireIn
+	 * @return
+	 */
+	private Date getExpirationTime(String sExpireIn) {
 		int nExpireIn = Integer.parseInt(sExpireIn);
     	return DateTime.now().plusHours(nExpireIn).toDate();
     }
 	
-	public JwtToken generateToken(AuthenticatedUser user) {
-		JwtToken jwtToken = new JwtToken();
-	 
-		try {
-			jwtToken.accessToken = this.generateAccessToken(user);
-			jwtToken.refreshToken = this.generateRefreshToken(user);
-		
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	 
-		return jwtToken; 
-	}
-	
+	/**
+	 * Access 토큰 생성
+	 * @param user
+	 * @return
+	 * @throws Exception
+	 */
 	public String generateAccessToken(AuthenticatedUser user) throws Exception {
 		JwtBuilder builder = Jwts.builder();
 		builder.setId(user.getUsername())
@@ -77,6 +103,12 @@ public class JwtTokenProvider {
 	 	return builder.compact();
 	}
 	
+	/**
+	 * Refresh 토큰 생성
+	 * @param user
+	 * @return
+	 * @throws Exception
+	 */
 	public String generateRefreshToken(AuthenticatedUser user) throws Exception {
 		JwtBuilder builder = Jwts.builder();
 		builder.setId(user.getUsername())
@@ -98,6 +130,12 @@ public class JwtTokenProvider {
 		return builder.compact();
 	}
 	
+	/**
+	 * JWT 토큰에서 만료일 가져오기
+	 * @param token
+	 * @return
+	 * @throws Exception
+	 */
 	public Date getExpirationFromJwt(String token) throws Exception {
 		Claims claims = Jwts.parser()
 				.setSigningKey(jwtProp.getProperty("jwt.secret"))
@@ -107,6 +145,11 @@ public class JwtTokenProvider {
 		return claims.getExpiration();
 	}
 	
+	/**
+	 * JWT 토큰에서 로그인 정보 가져오기
+	 * @param token
+	 * @return
+	 */
 	public AuthenticatedUser getAuthUserFromJwt(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(jwtProp.getProperty("jwt.secret"))
@@ -128,7 +171,12 @@ public class JwtTokenProvider {
         return user;   
 	}
 	
-	public int isValidateToken(String token) {
+	/**
+	 * JWT 토큰 유효성 검증
+	 * @param token
+	 * @return (0: false, 1: true, 2: expired)
+	 */
+	public int isValidateJwtToken(String token) {
 		try {
 			Jwts.parser().setSigningKey(jwtProp.getProperty("jwt.secret")).parseClaimsJws(token);
 			return 1;

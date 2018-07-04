@@ -1,12 +1,9 @@
 package kr.co.test.config.spring.security;
 
-import java.util.Properties;
-
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -51,9 +48,6 @@ public class SecurityConfig {
 		@Autowired
 		private JwtTokenProvider jwtTokenProvider; 
 		
-		@Value("#{jwt}")
-		private Properties jwtProp;
-		
 		@Override
 		public void configure(WebSecurity web) throws Exception {
 			web.ignoring()
@@ -85,8 +79,7 @@ public class SecurityConfig {
 				.authenticationEntryPoint(new RestAuthenticationEntryPoint())
 				.accessDeniedHandler(new RestAccessDeniedHandler());
 
-			JwtAuthenticationFilter jwtAuthFilter 
-				= new JwtAuthenticationFilter(jwtTokenProvider, jwtProp);
+			JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(jwtTokenProvider);
 			
 			http.addFilterBefore( jwtAuthFilter, UsernamePasswordAuthenticationFilter.class );
 			
