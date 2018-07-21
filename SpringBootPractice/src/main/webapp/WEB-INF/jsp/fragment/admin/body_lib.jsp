@@ -19,3 +19,4 @@
 	<script src="${pageContext.request.contextPath}/resources/js/sb-admin-2.js"></script>
 	<script src="${pageContext.request.contextPath}/resources/js/dateTimeUtils.js"></script>
 	<script src="${pageContext.request.contextPath}/resources/js/fileUtils.js"></script>
+	<script src="${pageContext.request.contextPath}/resources/js/validUtils.js"></script>

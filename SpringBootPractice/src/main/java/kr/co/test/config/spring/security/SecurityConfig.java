@@ -27,43 +27,42 @@ import kr.co.test.app.rest.login.security.entrypoint.RestAuthenticationEntryPoin
 import kr.co.test.app.rest.login.security.handler.RestAccessDeniedHandler;
 import kr.co.test.app.rest.login.security.handler.RestLogoutSuccessHandler;
 
-//@Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class SecurityConfig {
-	
+
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-	
+
 	@Order(1)
 	@Configuration
 	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
-		
+
 		public ApiWebSecurityConfigurationAdapter() {
 			super();
 		}
-		
+
 		@Autowired
-		private JwtTokenProvider jwtTokenProvider; 
-		
+		private JwtTokenProvider jwtTokenProvider;
+
 		@Override
 		public void configure(WebSecurity web) throws Exception {
 			web.ignoring()
 				.antMatchers("/api/login/auth")
 				.antMatchers("/api/login/refresh");
 		}
-		
+
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			http.antMatcher("/api/**")
 				.authorizeRequests()
 				.anyRequest().authenticated();
-			
+
 			http.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-			
+
 			http.headers()
 				.cacheControl();
 
@@ -80,13 +79,13 @@ public class SecurityConfig {
 				.accessDeniedHandler(new RestAccessDeniedHandler());
 
 			JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(jwtTokenProvider);
-			
+
 			http.addFilterBefore( jwtAuthFilter, UsernamePasswordAuthenticationFilter.class );
-			
+
 			http.cors().configurationSource(RestCorsConfig.configurationSource());
 		}
 	}
-	
+
 	@Order(2)
 	@Configuration
 	public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
@@ -96,10 +95,13 @@ public class SecurityConfig {
 		}
 
 		private static final String LOGIN_PAGE = "/admin/login";
-		
+
 		@Autowired @Qualifier("h2DataSource")
         private DataSource h2DataSource;
-		
+
+		@Autowired
+		private PageAuthenticationProvider pageAuthenticationProvider;
+
 		@Override
 		public void configure(WebSecurity web) throws Exception {
 			web.ignoring()
@@ -128,7 +130,7 @@ public class SecurityConfig {
 				.antMatchers("/**", LOGIN_PAGE).permitAll()
 				.antMatchers("/admin/**").authenticated()
 				.antMatchers("/admin/managerRemoveProcess").hasRole("ADMIN");
-			
+
 			// XXX: 로그인 처리만 https로 하는 경우
 			/*
 			http.requiresChannel()
@@ -150,7 +152,7 @@ public class SecurityConfig {
 				.logoutSuccessUrl("/admin/login?isTimeOut=Y")
 				.deleteCookies("JSESSIONID")
 				.invalidateHttpSession(true);
-			*/	
+			*/
 
 			http.rememberMe()
 				.rememberMeParameter("remember-me")
@@ -173,10 +175,10 @@ public class SecurityConfig {
 			db.setDataSource(h2DataSource);
 			return db;
 		}
-		
+
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(new PageAuthenticationProvider());
+			auth.authenticationProvider( pageAuthenticationProvider );
 		}
 	}
 

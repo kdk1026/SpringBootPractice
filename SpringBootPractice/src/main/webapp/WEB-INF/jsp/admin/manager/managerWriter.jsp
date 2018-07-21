@@ -146,7 +146,7 @@
 			$('#username_msg_wrap').hide();
 			
 			$check_btn.attr('disabled', true);
-			if ( !$.isBlank($username.val()) ) {
+			if ( !ValidUtils.isBlank($username.val()) ) {
 				$check_btn.attr('disabled', false);
 			}
 		});
@@ -215,7 +215,7 @@
 			}
 			
 			var $isCheckUSerName = $frm.find('input[name="isCheckUSerName"]');
-			if ( $.isBlank($isCheckUSerName.val()) ) {
+			if ( ValidUtils.isBlank($isCheckUSerName.val()) ) {
 				fn_alertModal(msgObj.duplNotChk);
 				return false;
 			}

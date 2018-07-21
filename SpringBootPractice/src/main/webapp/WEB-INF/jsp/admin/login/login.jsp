@@ -7,6 +7,7 @@
 
 <jsp:include page="/WEB-INF/jsp/fragment/admin/head_comn_lib.jsp" flush="false" />
 </head>
+
 <body style="background-color: #f8f8f8;">
 	<jsp:include page="/WEB-INF/jsp/fragment/admin/body_comn_lib.jsp" flush="false" />
 

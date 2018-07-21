@@ -17,17 +17,17 @@
 					 ELSE 2
 				END)
 		   AND 1= (
-				CASE WHEN #{srch_gbn} = 'id' 
+				CASE WHEN #{srch_gbn} = 'id'
 						AND ma.username LIKE '%'||#{srch_txt}||'%' THEN 1
-					 WHEN #{srch_gbn} = 'name' 
+					 WHEN #{srch_gbn} = 'name'
 					 	AND mai.fullname  LIKE '%'||#{srch_txt}||'%' THEN 1
 					 WHEN #{srch_gbn} = 'all'
 					 	AND (ma.username LIKE '%'||#{srch_txt}||'%'
-					 		OR mai.fullname  LIKE '%'||#{srch_txt}||'%') THEN 1 
+					 		OR mai.fullname  LIKE '%'||#{srch_txt}||'%') THEN 1
 					 ELSE 2
 				END)
 	</select>
-	
+
 	<!-- 관리자 목록 조회 -->
 	<select id="selectManagerList" parameterType="paramMap" resultType="resMap">
 		/* ManagerMapper.selectManagerList */
@@ -49,28 +49,28 @@
 						 ELSE 2
 					END)
 			   AND 1= (
-					CASE WHEN #{srch_gbn} = 'id' 
+					CASE WHEN #{srch_gbn} = 'id'
 							AND ma.username LIKE '%'||#{srch_txt}||'%' THEN 1
-						 WHEN #{srch_gbn} = 'name' 
+						 WHEN #{srch_gbn} = 'name'
 						 	AND mai.fullname  LIKE '%'||#{srch_txt}||'%' THEN 1
 						 WHEN #{srch_gbn} = 'all'
 						 	AND (ma.username LIKE '%'||#{srch_txt}||'%'
-						 		OR mai.fullname  LIKE '%'||#{srch_txt}||'%') THEN 1 
+						 		OR mai.fullname  LIKE '%'||#{srch_txt}||'%') THEN 1
 						 ELSE 2
 					END)
 			 ORDER BY ma.seq DESC
 		  )
-		 WHERE RNUM > #{start} limit #{length} 
+		 WHERE RNUM > #{start} limit #{length}
 	</select>
-	
+
 	<!-- 관리자 아이디 유무 조회 -->
 	<select id="selectCheckUserName" parameterType="paramMap" resultType="resMap">
 		/* ManagerMapper.selectCheckUserName */
 		SELECT CASE WHEN COUNT(*) > 0 THEN 'Y' ELSE 'N' END AS BEING
 		  FROM member_account
 		 WHERE username = #{username}
-	</select>	
-	
+	</select>
+
 	<!-- 관리자 계정 등록 -->
 	<insert id="insertManagerAccount" parameterType="paramMap">
 		/* ManagerMapper.insertManagerAccount */
@@ -86,7 +86,7 @@
 			, #{ipAddr}
 		)
 	</insert>
-	
+
 	<!-- 관리자 부가정보 등록 -->
 	<insert id="insertManagerInfo" parameterType="paramMap">
 		/* ManagerMapper.insertManagerInfo */
@@ -104,8 +104,8 @@
 			, #{etc}
 		)
 	</insert>
-	
-	<!-- 관리자 부가정보 삭제 -->	
+
+	<!-- 관리자 부가정보 삭제 -->
 	<delete id="deleteManagerInfo" parameterType="paramMap">
 		/* ManagerMapper.deleteManagerInfo */
 		DELETE FROM member_add_info
@@ -115,7 +115,7 @@
 		  </foreach>
 	</delete>
 
-	<!-- 관리자 계정 삭제 -->	
+	<!-- 관리자 계정 삭제 -->
 	<delete id="deleteManagerAccount" parameterType="paramMap">
 		/* ManagerMapper.deleteManagerAccount */
 		DELETE FROM member_account
@@ -124,7 +124,7 @@
 			#{item}
 		  </foreach>
 	</delete>
-	
+
 	<!-- 관리자 조회 -->
 	<select id="selectManagerInfo" parameterType="paramMap" resultType="resMap">
 		/* ManagerMapper.selectManagerInfo */
@@ -134,13 +134,13 @@
 				, mai.tel
 				, ma.enabled
 				, mai.etc
-				, IFNULL(TO_CHAR(ma.last_login_dt, 'YYYY-MM-DD HH24:MI'), '-') AS last_login_dt 
+				, IFNULL(TO_CHAR(ma.last_login_dt, 'YYYY-MM-DD HH24:MI'), '-') AS last_login_dt
 		  FROM member_account ma
 		  INNER JOIN member_add_info mai
 		     ON ma.username = mai.username
 		 WHERE ma.username = #{username}
 	</select>
-	
+
 	<!-- 관리자 부가정보 수정 -->
 	<update id="updateManagerInfo" parameterType="paramMap">
 		/* ManagerMapper.updateManagerInfo */
@@ -152,7 +152,7 @@
 		   		, upd_dt = SYSDATE
 		  WHERE username = #{username}
 	</update>
-	
+
 	<!-- 관리자 계정 수정 -->
 	<update id="updateManagerAccount" parameterType="paramMap">
 		/* ManagerMapper.updateManagerAccount */
@@ -160,7 +160,7 @@
 		   SET password = CASE WHEN #{password} = '' THEN password ELSE #{password} END
 		   		, enabled = #{enabled}
 		   		, last_pwd_upd_dt = CASE WHEN #{password} = '' THEN NULL ELSE SYSDATE END
-		   		, last_ebd_upd_dt = SYSDATE 
+		   		, last_ebd_upd_dt = SYSDATE
 		  WHERE username = #{username}
 	</update>
 

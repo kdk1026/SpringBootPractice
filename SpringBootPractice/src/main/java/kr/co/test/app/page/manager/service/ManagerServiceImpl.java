@@ -65,8 +65,14 @@ public class ManagerServiceImpl extends LogDeclare implements ManagerService {
 		String sPwd = paramCollector.getString(Constants.ID_PWD.PASSWORD);
 		paramCollector.put(Constants.ID_PWD.PASSWORD, passwordEncoder.encode(sPwd));
 		
-		managerMapper.insertManagerAccount(paramCollector.getMapAll());
-		managerMapper.insertManagerInfo(paramCollector.getMapAll());
+		try {
+			managerMapper.insertManagerAccount(paramCollector.getMapAll());
+			managerMapper.insertManagerInfo(paramCollector.getMapAll());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override

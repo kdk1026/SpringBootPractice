@@ -70,13 +70,13 @@ dependencies {
 
 	/* Other Web dependencies */
 	compile group: 'javax.servlet', name: 'jstl'
-	
+
 	// https://mvnrepository.com/artifact/org.codehaus.janino/janino
 	compile group: 'org.codehaus.janino', name: 'janino', version: '3.0.8'
-	
+
 	/* Aspectj Proxy */
 	compile group: 'cglib', name: 'cglib-nodep', version: '3.2.6'
-	
+
 /* Spring Boot */
 	compile('org.springframework.boot:spring-boot-starter-aop')
 	compile('org.springframework.boot:spring-boot-starter-cache')
@@ -93,14 +93,14 @@ dependencies {
 	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('org.springframework.security:spring-security-test')
-	
+
 	compile group: 'org.springframework.boot', name: 'spring-boot-starter-web-services'
 	providedRuntime group: 'org.apache.tomcat.embed', name: 'tomcat-embed-jasper'
 	compile group: 'net.sourceforge.nekohtml', name: 'nekohtml'
-	
-	
-	
-/* Spring Security */	
+
+
+
+/* Spring Security */
 	compile("org.springframework.security:spring-security-taglibs") {
 		 exclude group: 'org.springframework'
 	}
@@ -109,21 +109,21 @@ dependencies {
 	compile("com.zaxxer:HikariCP") {
 		 exclude module: 'slf4j-api'
 	}
-	
+
 /* Template Framework */
 	// https://mvnrepository.com/artifact/org.sitemesh/sitemesh
 	compile group: 'org.sitemesh', name: 'sitemesh', version: '3.0.1'
-	
+
 	// https://mvnrepository.com/artifact/org.apache.tiles/tiles-jsp
 	compile("org.apache.tiles:tiles-jsp:${tilesVersion}") {
 		 exclude module: 'slf4j-api'
 	}
-	
+
 	// https://mvnrepository.com/artifact/org.apache.tiles/tiles-core
 	compile("org.apache.tiles:tiles-core:${tilesVersion}") {
 		 exclude module: 'slf4j-api'
 	}
-	
+
 	// https://mvnrepository.com/artifact/org.apache.tiles/tiles-el
 	compile("org.apache.tiles:tiles-el:${tilesVersion}") {
 		 exclude module: 'slf4j-api'
@@ -131,9 +131,9 @@ dependencies {
 
 /* Render */
 	// https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
-	compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.7'	
-	
-	
+	compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.7'
+
+
 	// https://mvnrepository.com/artifact/net.sf.jxls/jxls-core
 	compile("net.sf.jxls:jxls-core:1.0.6") {
 		 exclude module: 'commons-beanutils'
@@ -143,14 +143,14 @@ dependencies {
 		 exclude module: 'poi'
 		 exclude module: 'poi-ooxml'
 	}
-	
+
 	// https://mvnrepository.com/artifact/com.lowagie/itext
 	compile group: 'com.lowagie', name: 'itext', version: '2.1.7'
-	
+
 /* Etc */
 	// https://mvnrepository.com/artifact/org.bgee.log4jdbc-log4j2/log4jdbc-log4j2-jdbc4
 	compile group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4', version: '1.16'
-	
+
 	// https://github.com/naver/lucy-xss-servlet-filter
 	compile group: 'com.navercorp.lucy', name: 'lucy-xss-servlet', version: '2.0.0'
 
@@ -158,36 +158,36 @@ dependencies {
 	compile("io.jsonwebtoken:jjwt:0.9.0") {
 		 exclude module: 'jackson-databind'
 	}
-	
+
 	// https://mvnrepository.com/artifact/net.sf.ehcache/ehcache
 	compile("net.sf.ehcache:ehcache:2.10.4") {
 		 exclude module: 'slf4j-api'
 	}
-	
+
 /* WebJar */
 	// https://mvnrepository.com/artifact/org.webjars.bower/jquery
 	compile group: 'org.webjars.bower', name: 'jquery', version: '3.2.1'
-	
+
 	// https://mvnrepository.com/artifact/org.webjars.bower/bootstrap
 	compile("org.webjars.bower:bootstrap:3.3.7") {
 		 exclude module: 'jquery'
 	}
-	
+
 	// https://mvnrepository.com/artifact/org.webjars.bower/metisMenu
 	compile("org.webjars.bower:metisMenu:2.7.0") {
 		 exclude module: 'jquery'
 	}
-	
+
 	// https://mvnrepository.com/artifact/org.webjars.bower/datatables
 	compile("org.webjars.bower:datatables:1.10.16") {
 		 exclude module: 'jquery'
 	}
-	
+
 	// https://mvnrepository.com/artifact/org.webjars.bower/datatables-responsive
 	compile("org.webjars.bower:datatables-responsive:2.2.1") {
 		 exclude module: 'jquery'
 	}
-	
+
 	// https://mvnrepository.com/artifact/org.webjars/font-awesome
 	compile group: 'org.webjars', name: 'font-awesome', version: '4.7.0'
 

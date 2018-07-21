@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -23,32 +24,33 @@ import common.util.crypto.RsaCryptoUtil;
 import kr.co.test.app.page.login.model.AuthenticatedUser;
 import kr.co.test.app.page.login.service.UserService;
 
+@Component
 public class PageAuthenticationProvider extends LogDeclare implements AuthenticationProvider {
-	
+
 	@Autowired
 	private UserService userService;
-	
+
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
-	
+
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		String username = authentication.getName();
         String password = (String) authentication.getCredentials();
         String decryptPwd = this.decryptRsa(password);
-        
+
         AuthenticatedUser user = null;
         Collection<GrantedAuthority> authorities = null;
-        
+
         try {
         	user = (AuthenticatedUser) userService.loadUserByUsername(username);
-        	
+
         	if ( !passwordEncoder.matches(decryptPwd, user.getPassword()) ) {
         		throw new BadCredentialsException("비밀번호 불일치");
         	}
-        	
+
         	authorities = user.getAuthorities();
-			
+
 		} catch (UsernameNotFoundException e) {
 			logger.error("", e);
 			throw new UsernameNotFoundException(e.getMessage());
@@ -67,14 +69,15 @@ public class PageAuthenticationProvider extends LogDeclare implements Authentica
 	public boolean supports(Class<?> authentication) {
 		return authentication.equals(UsernamePasswordAuthenticationToken.class);
 	}
-	
+
 	private String decryptRsa(String password) {
-		HttpServletRequest request	= ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes()).getRequest();
+		ServletRequestAttributes attr = (ServletRequestAttributes)RequestContextHolder.currentRequestAttributes();
+		HttpServletRequest request	= attr.getRequest();
 		HttpSession session = request.getSession(false);
-		
+
 		PrivateKey privateKey = RsaCryptoUtil.Session.getPrivateKeyInSession(session);
-		
+
 		return RsaCryptoUtil.Decrypt.decryptFromJsbn(password, privateKey.getEncoded());
 	}
-	
+
 }
