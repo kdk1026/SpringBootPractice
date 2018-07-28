@@ -12,17 +12,21 @@ See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
+        	<!-- display package = {36} -->
             <pattern>[%d{HH:mm:ss:SS}][%-5level][%logger{0}:%method:%line] - %msg%n</pattern>
         </encoder>
     </appender>
 	
 	<!-- Spring Framework -->
     <logger name="org.springframework" level="error" />
+    <logger name="org.apache.ibatis.session" level="error" />
     
-    <logger name="org.mybatis.spring.SqlSessionUtils" level="debug">
+    <logger name="org.mybatis.spring.SqlSessionUtils" additivity="false">
+    	<level value="debug" />
     	<appender-ref ref="console"/>
     </logger>
-	<logger name="org.springframework.jdbc.datasource.DataSourceTransactionManager" level="debug">
+	<logger name="org.springframework.jdbc.datasource.DataSourceTransactionManager" additivity="false">
+		<level value="debug" />
         <appender-ref ref="console"/>
     </logger>
     
@@ -38,7 +42,8 @@ See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-
  	<logger name="com.zaxxer.hikari" level="error" />
  	
  	<!-- Package -->
- 	<logger name="kr.co.test" level="debug">
+ 	<logger name="kr.co.test.app" additivity="false">
+ 		<level value="debug" />
  		<appender-ref ref="console"/>
  	</logger>
 
