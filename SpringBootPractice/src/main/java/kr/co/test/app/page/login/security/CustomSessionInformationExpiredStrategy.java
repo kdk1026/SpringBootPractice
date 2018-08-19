@@ -17,7 +17,6 @@ import org.springframework.security.web.session.SessionInformationExpiredStrateg
  * @Description	: 
  * <pre>
  * maxSessionsPreventsLogin(false) 인 경우에만 유효
- *  - 자동 로그아웃 처리됨
  * -----------------------------------
  * 개정이력
  * 2018. 8. 19. 김대광	최초작성
