@@ -17,6 +17,7 @@ import org.springframework.security.web.session.SessionInformationExpiredStrateg
  * @Description	: 
  * <pre>
  * maxSessionsPreventsLogin(false) 인 경우에만 유효
+ * expiredUrl은 Security 4.2 이하에서만 동작 
  * -----------------------------------
  * 개정이력
  * 2018. 8. 19. 김대광	최초작성
