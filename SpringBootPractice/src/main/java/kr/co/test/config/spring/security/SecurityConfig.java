@@ -164,7 +164,6 @@ public class SecurityConfig {
 				.sessionFixation().none()
 				.maximumSessions(1)
 					.maxSessionsPreventsLogin(false)
-//					.expiredUrl(LOGIN_PAGE+"?expired")		// expiredUrl은 Spring Security 4.2 이하에서만 동작
 					.expiredSessionStrategy( new CustomSessionInformationExpiredStrategy() );
 		}
 
