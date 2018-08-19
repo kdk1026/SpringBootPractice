@@ -70,12 +70,16 @@ public class ReqResAspect extends LogDeclare {
 			
 			Map<String, Object> cookieMap = new HashMap<>();
 			Cookie[] cookies = request.getCookies();
-			for (Cookie c : cookies) {
-				sKey = c.getName();
-				sVal = c.getValue();
-				cookieMap.put(sKey, sVal);
+			
+			if ( cookies != null ) {
+				for (Cookie c : cookies) {
+					sKey = c.getName();
+					sVal = c.getValue();
+					cookieMap.put(sKey, sVal);
+				}
+				
+				sCookie = GsonUtil.converterMapToJsonStr(cookieMap);
 			}
-			sCookie = GsonUtil.converterMapToJsonStr(cookieMap);
 			
 			Enumeration<?> headerNames = request.getHeaderNames();
 			Map<String, Object> headerMap = new HashMap<>();

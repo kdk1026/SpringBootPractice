@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.rememberme.JdbcTokenRepos
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import common.spring.RestCorsConfig;
+import kr.co.test.app.page.login.security.CustomSessionInformationExpiredStrategy;
 import kr.co.test.app.page.login.security.PageAuthenticationProvider;
 import kr.co.test.app.rest.login.security.JwtAuthenticationFilter;
 import kr.co.test.app.rest.login.security.JwtTokenProvider;
@@ -141,32 +142,30 @@ public class SecurityConfig {
 			http.formLogin()
 				.loginPage(LOGIN_PAGE)
 				.defaultSuccessUrl("/admin/login/loginProc")
-				.failureUrl("/admin/login?invalid=Y")
+				.failureUrl(LOGIN_PAGE+"?error")
 				.loginProcessingUrl("/admin/login/auth")
 				.usernameParameter("username").passwordParameter("password");
 
-			// XXX: 404 오류로 Controller 수작업 (Java 6, GET) - Spring 4 미확인
-			/*
 			http.logout()
 				.logoutUrl("/admin_logout")
-				.logoutSuccessUrl("/admin/login?isTimeOut=Y")
+				.logoutSuccessUrl("/admin/login")
 				.deleteCookies("JSESSIONID")
 				.invalidateHttpSession(true);
-			*/
 
 			http.rememberMe()
 				.rememberMeParameter("remember-me")
 				.key("steady")
 				.tokenValiditySeconds(24*60*60)	// 86400
-				.tokenRepository( persistentTokenRepository() );
+				.tokenRepository( this.persistentTokenRepository() );
 
 			http.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.NEVER)
-				.invalidSessionUrl(LOGIN_PAGE)
+				.invalidSessionUrl(LOGIN_PAGE+"?invalid")
 				.sessionFixation().none()
-				.maximumSessions(2)
-					.expiredUrl(LOGIN_PAGE)
-					.maxSessionsPreventsLogin(true);
+				.maximumSessions(1)
+					.maxSessionsPreventsLogin(false)
+//					.expiredUrl(LOGIN_PAGE+"?expired")		// expiredUrl은 Spring Security 4.2 이하에서만 동작
+					.expiredSessionStrategy( new CustomSessionInformationExpiredStrategy() );
 		}
 
 		@Bean
