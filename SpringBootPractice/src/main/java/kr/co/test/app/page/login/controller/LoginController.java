@@ -40,14 +40,10 @@ public class LoginController extends LogDeclare {
 		ResultSetMap resMap = new ResultSetMap();
 		String sUri = "";
 		
-		if ( paramCollector.containsKey("error") ) {
+		String sInvalid = paramCollector.getString("invalid");
+		if ( !StringUtils.isEmpty(sInvalid) && sInvalid.equals("Y") ) {
 			resMap.put(Constants.ALERT.ALERT, Constants.ALERT.DANGER);
 			resMap.put(Constants.MESSAGE.MESSAGE, Constants.MESSAGE.LOGIN_INVALID);
-		}
-		
-		if ( paramCollector.containsKey("invalid") ) {
-			resMap.put(Constants.ALERT.ALERT, Constants.ALERT.DANGER);
-			resMap.put(Constants.MESSAGE.MESSAGE, Constants.MESSAGE.SESSION_EXPIRED);
 		}
 		
 		Map<String, ?> fm = RequestContextUtils.getInputFlashMap(paramCollector.getRequest());
@@ -98,6 +94,34 @@ public class LoginController extends LogDeclare {
 		}
 
 		return sb.toString();
+	}
+	
+	@GetMapping("/logout")
+	public String logout(ParamCollector paramCollector, RedirectAttributes redirectAttributes) {
+		
+		if ( paramCollector.containsKey("expired") && paramCollector.getString("expired").equals("Y") ) {
+			String sRememberMe = CookieUtilVer2.getCookie(paramCollector.getRequest(), "SPRING_SECURITY_REMEMBER_ME_COOKIE");
+			logger.debug("RememberMe is {}", sRememberMe);
+			
+			if ( StringUtils.hasText(sRememberMe) ) {
+				String sReferer = paramCollector.getRequest().getHeader("referer");
+				String sRefererUrl = sReferer.substring(sReferer.indexOf("/admin"), sReferer.length());
+				
+				redirectAttributes.addFlashAttribute("refererUrl", sRefererUrl);
+				return "redirect:/admin/login/loginProc";
+				
+			} else {
+				ResultSetMap resMap = new ResultSetMap();
+				resMap.put(Constants.ALERT.ALERT, Constants.ALERT.INFO);
+				resMap.put(Constants.MESSAGE.MESSAGE, Constants.MESSAGE.SESSION_EXPIRED);
+				
+				redirectAttributes.addFlashAttribute("vo", resMap);				
+			}
+		}
+		
+		new SecurityContextLogoutHandler().logout(paramCollector.getRequest(), null, null);
+		
+		return "redirect:/admin/login";
 	}
 	
 }

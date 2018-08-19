@@ -32,7 +32,8 @@ public class CustomSessionInformationExpiredStrategy implements SessionInformati
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("<script type='text/javascript'>");
-		sb.append("alert('다른 곳에서 로그인 되어 자동 로그아웃 됩니다.'); top.location.href = "+ sCtx +"'/admin_logout';");
+		sb.append("alert('다른 곳에서 로그인 되어 자동 로그아웃 됩니다.');");
+		sb.append("top.location.href = "+ sCtx +"'/admin_logout';");
 		sb.append("</script>");
 		
 		HttpServletResponse response = eventØ.getResponse();

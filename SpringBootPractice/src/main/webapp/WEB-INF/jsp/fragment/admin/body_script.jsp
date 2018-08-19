@@ -16,7 +16,7 @@
 	var day = today.getDate(); 
 	var h = today.getHours();
 	var m = today.getMinutes() + 4;
-	var s = today.getSeconds() + 50;
+	var s = today.getSeconds() + 59;
 
 	var countDown = new Date(year, month, day, h, m, s).getTime();
 	
@@ -27,8 +27,7 @@
 		if (distance < 0) {
 			clearInterval(x);
 			
-			var url = "${pageContext.request.contextPath}/admin/login/logout?expired=Y";
-			location.href = url;
+			document.getElementById("logoutFrm").submit();
 		}
 	}
 	

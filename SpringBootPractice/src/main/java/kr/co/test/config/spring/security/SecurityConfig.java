@@ -163,7 +163,7 @@ public class SecurityConfig {
 				.invalidSessionUrl(LOGIN_PAGE+"?invalid")
 				.sessionFixation().none()
 				.maximumSessions(1)
-					.maxSessionsPreventsLogin(false)
+					.maxSessionsPreventsLogin(true)
 					.expiredSessionStrategy( new CustomSessionInformationExpiredStrategy() );
 		}
 

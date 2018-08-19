@@ -25,7 +25,7 @@
 	          		</div>
 	          		<div class="modal-footer">
 	          			<%-- Spring Security 4 이후, Secrity Logout은 POST만 가능 --%>
-	            		<form:form action="${pageContext.request.contextPath}/admin_logout" method="post">
+	            		<form:form action="${pageContext.request.contextPath}/admin_logout" method="post" id="logoutFrm">
 		            		<button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
 	            			<button class="btn btn-primary" type="submit">로그아웃</button>
 	            		</form:form>
