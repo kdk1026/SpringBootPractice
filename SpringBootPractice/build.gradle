@@ -98,6 +98,9 @@ dependencies {
 	providedRuntime group: 'org.apache.tomcat.embed', name: 'tomcat-embed-jasper'
 	compile group: 'net.sourceforge.nekohtml', name: 'nekohtml'
 
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-validation'
+
 
 
 /* Spring Security */
@@ -163,6 +166,10 @@ dependencies {
 	compile("net.sf.ehcache:ehcache:2.10.4") {
 		 exclude module: 'slf4j-api'
 	}
+	
+	// https://mvnrepository.com/artifact/org.projectlombok/lombok
+	providedRuntime group: 'org.projectlombok', name: 'lombok', version: '1.18.2'
+	
 
 /* WebJar */
 	// https://mvnrepository.com/artifact/org.webjars.bower/jquery
