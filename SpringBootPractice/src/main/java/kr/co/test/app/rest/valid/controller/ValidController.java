@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
-import org.springframework.validation.ObjectError;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +17,7 @@ import common.ResponseCodeEnum;
 import common.spring.resolver.ParamCollector;
 import common.util.map.MapUtil;
 import common.util.map.ResultSetMap;
+import kr.co.test.app.common.spring.CommonValid;
 import kr.co.test.app.rest.valid.vo.MemberVo;
 
 @RestController
@@ -60,34 +60,14 @@ public class ValidController extends LogDeclare {
 		MemberVo member = new MemberVo();
 		MapUtil.convertMapToObject(paramCollector.getMap(), member);
 
-		DataBinder binder = new DataBinder(member);
-		BindingResult bindingResult = binder.getBindingResult();
+		ResultSetMap resMap = CommonValid.checkRestValid(validator, member);
 		
-		validator.validate(member, bindingResult);
-		
-		ResultSetMap resMap = new ResultSetMap();
-		
-		if ( bindingResult.hasErrors() ) {
-			ObjectError error = bindingResult.getAllErrors().get(0);
-			
-			switch (error.getCode()) {
-			case "NotBlank":
-				resMap.put("resp_code", ResponseCodeEnum.NO_INPUT.getCode());
-				break;
-			case "Pattern":
-				resMap.put("resp_code", ResponseCodeEnum.NO_INPUT_FORMAT.getCode());
-				break;
-
-			default:
-				break;
-			}
-			
-			resMap.put("resp_msg", error.getDefaultMessage());
-			
-		} else {
-			resMap.put("resp_code", ResponseCodeEnum.SUCCESS.getCode());
-			resMap.put("resp_msg", ResponseCodeEnum.SUCCESS.getMessage());
+		if ( !resMap.isEmpty() ) {
+			return resMap;
 		}
+		
+		resMap.put("resp_code", ResponseCodeEnum.SUCCESS.getCode());
+		resMap.put("resp_msg", ResponseCodeEnum.SUCCESS.getMessage());
 		
 		return resMap;
 	}
