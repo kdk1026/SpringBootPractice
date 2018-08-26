@@ -1,4 +1,4 @@
-package kr.co.test.app.common.spring;
+package kr.co.test.app.common.spring.valid;
 
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;

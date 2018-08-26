@@ -17,7 +17,7 @@ import common.ResponseCodeEnum;
 import common.spring.resolver.ParamCollector;
 import common.util.map.MapUtil;
 import common.util.map.ResultSetMap;
-import kr.co.test.app.common.spring.CommonValid;
+import kr.co.test.app.common.spring.valid.CommonValid;
 import kr.co.test.app.rest.valid.vo.MemberVo;
 
 @RestController
