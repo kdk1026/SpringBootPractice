@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import common.BaseObject;
 import common.util.ResponseUtil;
-import common.util.file.FileUtil;
 import common.util.file.NioFileUtil;
 import common.util.string.StringUtilsSub;
 
@@ -79,7 +78,7 @@ public class Spring4FileUtil {
 	 * @return
 	 */
 	public static FileVO uploadFile(MultipartFile multipartFile, String destFilePath) {
-		destFilePath = (destFilePath.replaceAll("^(.*)(.$)", "$2").equals("/")) ? destFilePath : (destFilePath + FileUtil.FOLDER_SEPARATOR);
+		destFilePath = (destFilePath.replaceAll("^(.*)(.$)", "$2").equals("/")) ? destFilePath : (destFilePath + NioFileUtil.FOLDER_SEPARATOR);
 		
 		Path destPath = Paths.get(destFilePath);
 		

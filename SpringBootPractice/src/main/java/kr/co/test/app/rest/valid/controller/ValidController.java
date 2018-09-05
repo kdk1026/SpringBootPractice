@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import common.LogDeclare;
 import common.ResponseCodeEnum;
 import common.spring.resolver.ParamCollector;
-import common.util.map.MapUtil;
 import common.util.map.ResultSetMap;
+import common.util.object.ObjectUtil;
 import kr.co.test.app.common.spring.valid.CommonValid;
 import kr.co.test.app.rest.valid.vo.MemberVo;
 
@@ -40,7 +40,7 @@ public class ValidController extends LogDeclare {
 	@RequestMapping("add2")
 	public ResponseEntity<?> add2(ParamCollector paramCollector) {
 		MemberVo member = new MemberVo();
-		MapUtil.convertMapToObject(paramCollector.getMap(), member);
+		ObjectUtil.mapToObject(paramCollector.getMap(), member);
 
 		DataBinder binder = new DataBinder(member);
 		BindingResult bindingResult = binder.getBindingResult();
@@ -58,7 +58,7 @@ public class ValidController extends LogDeclare {
 	@RequestMapping(value = "add3", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResultSetMap add3(ParamCollector paramCollector) {
 		MemberVo member = new MemberVo();
-		MapUtil.convertMapToObject(paramCollector.getMap(), member);
+		ObjectUtil.mapToObject(paramCollector.getMap(), member);
 
 		ResultSetMap resMap = CommonValid.checkRestValid(validator, member);
 		

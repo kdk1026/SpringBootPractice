@@ -1,6 +1,7 @@
 package kr.co.test.app.page.file.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -13,8 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import common.LogDeclare;
 import common.spring.resolver.ParamCollector;
-import common.util.ObjectUtil;
 import common.util.map.MapUtil;
+import common.util.object.ObjectUtil;
 import kr.co.test.app.common.spring.util.Spring4FileUtil;
 import kr.co.test.app.common.spring.util.Spring4FileUtil.FileVO;
 
@@ -40,7 +41,11 @@ public class FileServiceImpl extends LogDeclare implements FileService {
 		FileVO fileVO = Spring4FileUtil.uploadFile(multipartFile, sDestFilePath);
 		
 		if (fileVO != null) {
-			Map<String, Object> fileMap = ObjectUtil.convertObjectToMap(fileVO);
+			Map<String, String> map = MapUtil.objectToMap(fileVO);
+			
+			Map<String, Object> fileMap = new HashMap<>();
+			fileMap.putAll(map);
+			
 			m_fileList.add(fileMap);
 		}
 		
@@ -49,13 +54,9 @@ public class FileServiceImpl extends LogDeclare implements FileService {
 
 	@Override
 	public void processFileDownload(ParamCollector paramCollector, int idx, HttpServletResponse response) {
-		String sDestFilePath = fileProp.getProperty("file.upload.path");
-		
 		Map<String, Object> map = m_fileList.get(idx);
 		FileVO fileVO = new FileVO();
-		MapUtil.convertMapToStruct(map, fileVO);
-		
-		fileVO.destFilePath = sDestFilePath;
+		ObjectUtil.mapToStruct(map, fileVO);
 		
 		Spring4FileUtil.downloadFile(fileVO, paramCollector.getRequest(), response);
 	}

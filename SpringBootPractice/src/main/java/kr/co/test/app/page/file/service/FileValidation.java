@@ -3,8 +3,8 @@ package kr.co.test.app.page.file.service;
 import org.springframework.web.multipart.MultipartFile;
 
 import common.spring.resolver.ParamCollector;
-import common.util.file.FileUtil;
 import common.util.file.NioFileTypeUtil;
+import common.util.file.NioFileUtil;
 import common.util.map.ResultSetMap;
 import kr.co.test.app.common.Constants;
 import kr.co.test.app.common.ResponseCode;
@@ -28,7 +28,7 @@ public class FileValidation {
 		
 		if (multipartFile != null) {
 			orignlFileNm = multipartFile.getOriginalFilename();
-			fileExt = FileUtil.getFileExtension(orignlFileNm);
+			fileExt = NioFileUtil.getFileExtension(orignlFileNm);
 			fileSize = multipartFile.getSize();
 			mimeType = multipartFile.getContentType();
 		}
