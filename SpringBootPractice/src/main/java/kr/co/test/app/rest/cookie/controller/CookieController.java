@@ -18,14 +18,14 @@ public class CookieController extends LogDeclare {
 
 	@RequestMapping("/set")
 	public String set(HttpServletResponse response) {
-		CookieUtilVer2.addCookie(response, TEST_COOKIE_KEY, "test", (60*5), true);
+		CookieUtilVer2.addCookie(response, TEST_COOKIE_KEY, "test", (60*5), true, false);
 		
 		return "Cookie Set Test";
 	}
 	
 	@RequestMapping("/get")
 	public String get(ParamCollector paramCollector) {
-		String msg = CookieUtilVer2.getCookie(paramCollector.getRequest(), TEST_COOKIE_KEY);
+		String msg = CookieUtilVer2.getCookieValue(paramCollector.getRequest(), TEST_COOKIE_KEY);
 		
 		return msg;
 	}

@@ -100,7 +100,7 @@ public class LoginController extends LogDeclare {
 	public String logout(ParamCollector paramCollector, RedirectAttributes redirectAttributes) {
 		
 		if ( paramCollector.containsKey("expired") && paramCollector.getString("expired").equals("Y") ) {
-			String sRememberMe = CookieUtilVer2.getCookie(paramCollector.getRequest(), "SPRING_SECURITY_REMEMBER_ME_COOKIE");
+			String sRememberMe = CookieUtilVer2.getCookieValue(paramCollector.getRequest(), "SPRING_SECURITY_REMEMBER_ME_COOKIE");
 			logger.debug("RememberMe is {}", sRememberMe);
 			
 			if ( StringUtils.hasText(sRememberMe) ) {
