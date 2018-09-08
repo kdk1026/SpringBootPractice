@@ -18,7 +18,7 @@ public class CookieController extends LogDeclare {
 
 	@RequestMapping("/set")
 	public String set(HttpServletResponse response) {
-		CookieUtilVer2.addCookie(response, TEST_COOKIE_KEY, "test", (60*5), true, false);
+		CookieUtilVer2.addCookie(response, TEST_COOKIE_KEY, "test", (60*5), false, false, null);
 		
 		return "Cookie Set Test";
 	}
