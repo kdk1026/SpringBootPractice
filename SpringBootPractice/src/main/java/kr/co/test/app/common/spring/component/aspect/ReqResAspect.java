@@ -2,6 +2,7 @@ package kr.co.test.app.common.spring.component.aspect;
 
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -19,12 +20,14 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.HandlerMapping;
 
 import common.LogDeclare;
 import common.spring.resolver.ParamCollector;
 import common.util.RequestIpUtil;
 import common.util.json.GsonUtil;
+import common.util.map.ParamMap;
 import common.util.map.ResultSetMap;
 
 @Component
@@ -109,7 +112,29 @@ public class ReqResAspect extends LogDeclare {
 	        		paramCollector = (ParamCollector)obj;
 	        	}
 	        }
-	        String sParameter = GsonUtil.converterMapToJsonStr(paramCollector.getMap());
+	        
+	        ParamMap paramMap = paramCollector.getMap();
+	        ParamMap newParamMap = new ParamMap();
+	        
+	        if ( !paramMap.isEmpty() ) {
+	        	newParamMap.putAll(paramMap);
+	        	
+	        	// 파일의 경우, 파일명만 로깅 처리
+	        	sKey = "";
+	        	Object obj = null;
+	        	Iterator<String> it = paramMap.keySet().iterator();
+	        	while ( it.hasNext() ) {
+	        		sKey = it.next();
+	        		obj = newParamMap.get(sKey);
+	        		
+	        		if ( obj instanceof MultipartFile ) {
+	        			MultipartFile mFile = (MultipartFile) obj;
+	        			newParamMap.put(sKey, mFile.getOriginalFilename());
+	        		}
+	        	}
+	        }
+	        
+	        String sParameter = GsonUtil.converterMapToJsonStr(newParamMap);
 			
 			logger.info("[{}] Agent - {}", sRemoteAddr, sAgent);
 			logger.info("[{}] Cookie - {}", sRemoteAddr, sCookie);
