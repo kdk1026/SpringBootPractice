@@ -21,7 +21,7 @@ import kr.co.test.app.common.spring.valid.CommonValid;
 import kr.co.test.app.rest.valid.vo.MemberVo;
 
 @RestController
-@RequestMapping("valid")
+@RequestMapping("/valid")
 public class ValidController extends LogDeclare {
 	
 	@Autowired
@@ -59,8 +59,28 @@ public class ValidController extends LogDeclare {
 	public ResultSetMap add3(ParamCollector paramCollector) {
 		MemberVo member = new MemberVo();
 		ObjectUtil.mapToObject(paramCollector.getMap(), member);
-
+		
 		ResultSetMap resMap = CommonValid.checkRestValid(validator, member);
+		
+		if ( !resMap.isEmpty() ) {
+			return resMap;
+		}
+		
+		resMap.put("resp_code", ResponseCodeEnum.SUCCESS.getCode());
+		resMap.put("resp_msg", ResponseCodeEnum.SUCCESS.getMessage());
+		
+		return resMap;
+	}
+	
+	@RequestMapping(value = "add4", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResultSetMap add4(ParamCollector paramCollector) {
+		MemberVo member = new MemberVo();
+		ObjectUtil.mapToObject(paramCollector.getMap(), member);
+		
+		LocalValidatorFactoryBean manualValidator = new LocalValidatorFactoryBean();
+		manualValidator.afterPropertiesSet();
+		
+		ResultSetMap resMap = CommonValid.checkRestValid(manualValidator, member);
 		
 		if ( !resMap.isEmpty() ) {
 			return resMap;
