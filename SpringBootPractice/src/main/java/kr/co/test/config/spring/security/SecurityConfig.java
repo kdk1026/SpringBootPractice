@@ -108,7 +108,8 @@ public class SecurityConfig {
 			web.ignoring()
 				.antMatchers("/resources/**")
 				.antMatchers("/webjars/**")
-				.antMatchers("/console/**");
+				.antMatchers("/console/**")
+				.antMatchers("/**");
 		}
 
 		@Override

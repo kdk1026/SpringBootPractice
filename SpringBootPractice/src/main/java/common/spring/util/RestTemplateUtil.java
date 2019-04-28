@@ -1,6 +1,10 @@
 package common.spring.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.client.config.RequestConfig;
@@ -8,108 +12,225 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+/**
+ * <pre>
+ * 개정이력
+ * -----------------------------------
+ * 2019. 4. 27. 김대광	최초작성
+ * </pre>
+ * 
+ * <pre>
+ * Spring 전용 Http Client
+ *  - Dependency
+ *    > Apache HttpClient
+ *    > Jackson 
+ * </pre>
+ *
+ * @author 김대광
+ */
 public class RestTemplateUtil {
 	
-	private static final Logger logger = LoggerFactory.getLogger(RestTemplateUtil.class);
-
 	private RestTemplateUtil() {
 		super();
 	}
-	
-	private static RestTemplate restTemplate;
-	private static final int TIMEOUT = 5000;
-	
-	private static RestTemplate getRestTemplate(boolean isSSL) {
-		restTemplate = null;
+
+	private static class Config {
+		private static boolean isSSL;
 		
-		RequestConfig config = RequestConfig.custom()
-				.setConnectTimeout(TIMEOUT)
-				.setConnectionRequestTimeout(TIMEOUT)
-				.setSocketTimeout(TIMEOUT)
-				.build();
-		
-		CloseableHttpClient httpClient = null;
-		if (isSSL) {
-			// HttpClient version 4.4 Standard
-			httpClient = HttpClients.custom()
-					.setDefaultRequestConfig(config)
-					.setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
-		} else {
-			httpClient = HttpClientBuilder.create()
-					.setDefaultRequestConfig(config)
+		private static class HttpClientConfig {
+			private static final int TIMEOUT = 5000;
+			
+			private static final RequestConfig config = 
+					RequestConfig.custom()
+					.setConnectTimeout(TIMEOUT)
+					.setConnectionRequestTimeout(TIMEOUT)
+					.setSocketTimeout(TIMEOUT)
 					.build();
 		}
 		
-		HttpComponentsClientHttpRequestFactory requestFactory
-			= new HttpComponentsClientHttpRequestFactory(httpClient);
-		
-		return new RestTemplate(requestFactory);
-	}
-
-	public static ResponseEntity<String> getString(boolean isSSL, String url, Map<String, Object> header) {
-		HttpHeaders requestHeaders = new HttpHeaders();
-		
-		if (header != null) {
-	        Iterator<String> it = header.keySet().iterator();
-	        String key = "";
-	        
-	        while(it.hasNext()) {
-	        	 key = it.next();
-	        	 requestHeaders.set(key, String.valueOf(header.get(key)));
-	        }
-		}
-		
-		ResponseEntity<String> result = null;
-		
-		try {
-			restTemplate = getRestTemplate(isSSL);
-			HttpEntity<Object> requestEntity = new HttpEntity<>(requestHeaders);
-			
-			result = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
-			
-		} catch (Exception e) {
-			logger.error("", e);
-		}
-		
-		return result;
-	}
-	
-	public static ResponseEntity<String> postString(boolean isSSL, String url, Map<String, Object> header, Map<String, Object> param) {
-		HttpHeaders requestHeaders = new HttpHeaders();
-		
-		if (header != null) {
-			Iterator<String> it = header.keySet().iterator();
-			String key = "";
-			
-			while(it.hasNext()) {
-				key = it.next();
-				requestHeaders.set(key, String.valueOf(header.get(key)));
+		private static class HttpClientInstance {
+			private static CloseableHttpClient getHttpClient(boolean isSSL) {
+				CloseableHttpClient httpClient = null;
+				
+				/*
+				 * connection pool 적용
+				 *  - setMaxConnTotal		: 오픈되는 최대 커넥션 수 제한
+				 *  - setMaxConnPerRoute	: IP, 포트 1쌍에 대해 수행 할 연결 수 제한
+				 */
+				
+				if (isSSL) {
+					httpClient = HttpClients.custom()
+						.setDefaultRequestConfig(HttpClientConfig.config)
+						.setSSLHostnameVerifier(new NoopHostnameVerifier())
+						.setMaxConnTotal(100)
+						.setMaxConnPerRoute(5)
+						.build();
+				} else {
+					httpClient = HttpClientBuilder.create()
+							.setDefaultRequestConfig(HttpClientConfig.config)
+							.setMaxConnTotal(100)
+							.setMaxConnPerRoute(5)
+							.build();
+				}
+				
+				return httpClient;
 			}
 		}
 		
-		
-		ResponseEntity<String> result = null;
-		
-		try {
-			restTemplate = getRestTemplate(isSSL);
-			HttpEntity<Object> requestEntity = new HttpEntity<>(requestHeaders);
+		private static class HttpRequestFactory {
+			private static HttpComponentsClientHttpRequestFactory getRequestFactory(boolean isSSL) {
+				return new HttpComponentsClientHttpRequestFactory(HttpClientInstance.getHttpClient(isSSL));
+			}
+		}
+	}
+	
+	private static class Convert {
+		@SuppressWarnings("unchecked")
+		private static Map<String, Object> objectToMap(Object obj) {
+			Map<String, Object> map = new HashMap<>();
 			
-			result = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+			ObjectMapper oMapper = new ObjectMapper();
+			map = oMapper.convertValue(obj, Map.class);
 			
-		} catch (Exception e) {
-			logger.error("", e);
+			return map;
 		}
 		
-		return result;
+		private static void mapToHttpHeaders(Map<String, Object> headerMap, HttpHeaders headers) {
+			Iterator<String> it = headerMap.keySet().iterator();
+			
+			while ( it.hasNext() ) {
+				String sKey = it.next();
+				Object value = headerMap.get(sKey);
+				
+				headers.set(sKey, String.valueOf(value));
+			}
+		}
+		
+		private static MultiValueMap<String, Object> hashMapToMultiValueMap(Map<String, Object> map) throws IOException {
+			MultiValueMap<String, Object> mMap = new LinkedMultiValueMap<>();
+			
+			Iterator<String> it = map.keySet().iterator();
+			while ( it.hasNext() ) {
+				String sKey = it.next();
+				Object value = map.get(sKey);
+				
+				if ( value instanceof List<?> ) {
+					@SuppressWarnings("unchecked")
+					List<Object> list = (List<Object>) value;
+					mMap.put(sKey, list);
+					
+				} else if ( value instanceof File ) {
+					File file = (File) value;
+					mMap.add(sKey, new FileSystemResource(file));
+					
+				} else if ( value instanceof MultipartFile ) {
+					MultipartFile mFile = (MultipartFile) value;
+					mMap.add(sKey, new ByteArrayResource(mFile.getBytes()) {
+						
+						@Override
+						public String getFilename() {
+							return mFile.getOriginalFilename();
+						}
+					});
+					
+				} else {
+					mMap.add(sKey, String.valueOf(value));
+				}
+			}
+			
+			return mMap;
+		}
+	}
+	
+	/**
+	 * LazyHolder Singleton 패턴
+	 * 
+	 * @return
+	 */
+	private static class LazyHolder {
+		private static final RestTemplate INSTANCE = new RestTemplate(Config.HttpRequestFactory.getRequestFactory(Config.isSSL));
+	}
+	
+	/**
+	 * Singleton 인스턴스 생성
+	 * 
+	 * @return
+	 */
+	private static RestTemplate getInstance(boolean isSSL) {
+		Config.isSSL = isSSL;
+		return LazyHolder.INSTANCE;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static ResponseEntity<Object> get(boolean isSSL, String url, MediaType mediaType
+			, Map<String, Object> headerMap, Class<?> responseType, Object... uriVariables) {
+		
+		RestTemplate restTemplate = RestTemplateUtil.getInstance(isSSL);
+		
+		HttpHeaders headers = new HttpHeaders();
+		
+		headers.setContentType(mediaType);
+		
+		Convert.mapToHttpHeaders(headerMap, headers);
+		
+		HttpEntity<Object> request = new HttpEntity<>(headers);
+			
+		if ( uriVariables != null ) {
+			return (ResponseEntity<Object>) restTemplate.postForEntity(url, request, responseType, uriVariables);
+		} else {
+			return (ResponseEntity<Object>) restTemplate.postForEntity(url, request, responseType);
+		} 
+	}
+	
+	public static ResponseEntity<Object> post(boolean isSSL, String url, MediaType mediaType
+			, Map<String, Object> headerMap, Object body, Class<?> responseType, Object... uriVariables) throws IOException {
+		
+		Map<String, Object> bodyMap = Convert.objectToMap(body);
+		return post(isSSL, url, mediaType, headerMap, bodyMap, responseType, uriVariables);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static ResponseEntity<Object> post(boolean isSSL, String url, MediaType mediaType
+			, Map<String, Object> headerMap, Map<String, Object> bodyMap, Class<?> responseType, Object... uriVariables) throws IOException {
+		
+		RestTemplate restTemplate = RestTemplateUtil.getInstance(isSSL);
+		
+		HttpHeaders headers = new HttpHeaders();
+		
+		headers.setContentType(mediaType);
+		
+		Convert.mapToHttpHeaders(headerMap, headers);
+		
+		HttpEntity<Object> request = null;
+		MultiValueMap<String, Object> mMap = null;
+		
+		if ( mediaType == null || MediaType.APPLICATION_FORM_URLENCODED.equals(mediaType) || MediaType.MULTIPART_FORM_DATA.equals(mediaType) ) {
+			mMap = Convert.hashMapToMultiValueMap(bodyMap);
+			request = new HttpEntity<>(mMap, headers);
+			
+		} else {
+			request = new HttpEntity<>(bodyMap, headers);
+		}
+			
+		if ( uriVariables != null ) {
+			return (ResponseEntity<Object>) restTemplate.postForEntity(url, request, responseType, uriVariables);
+		} else {
+			return (ResponseEntity<Object>) restTemplate.postForEntity(url, request, responseType);
+		} 
 	}
 	
 }

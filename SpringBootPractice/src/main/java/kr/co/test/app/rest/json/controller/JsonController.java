@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -33,6 +34,7 @@ public class JsonController extends LogDeclare {
 	 * @return
 	 */
 	@ResponseBody
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "json_converter", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResultSetMap jsonConverter(ParamCollector paramCollector) {
 		return jsonService.data(paramCollector);
