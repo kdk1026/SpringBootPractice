@@ -16,6 +16,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -109,15 +110,25 @@ public class RestTemplateUtil {
 			return map;
 		}
 		
-		private static void mapToHttpHeaders(Map<String, Object> headerMap, HttpHeaders headers) {
-			Iterator<String> it = headerMap.keySet().iterator();
+		private static MultiValueMap<String, String> mapToHttpHeaders(Map<String, Object> headerMap, HttpHeaders headers) {
+			MultiValueMap<String, String> mMap = new LinkedMultiValueMap<>();
 			
-			while ( it.hasNext() ) {
-				String sKey = it.next();
-				Object value = headerMap.get(sKey);
-				
-				headers.set(sKey, String.valueOf(value));
+			if ( headers.getContentType() != null ) {
+				mMap.add(HttpHeaders.CONTENT_TYPE, headers.getContentType().toString());
 			}
+			
+			if ( headerMap != null ) {
+				Iterator<String> it = headerMap.keySet().iterator();
+				
+				while ( it.hasNext() ) {
+					String sKey = it.next();
+					Object value = headerMap.get(sKey);
+					
+					mMap.add(sKey, String.valueOf(value));
+				}
+			}
+			
+			return mMap;
 		}
 		
 		private static MultiValueMap<String, Object> hashMapToMultiValueMap(Map<String, Object> map) throws IOException {
@@ -138,7 +149,7 @@ public class RestTemplateUtil {
 					mMap.add(sKey, new FileSystemResource(file));
 					
 				} else if ( value instanceof MultipartFile ) {
-					MultipartFile mFile = (MultipartFile) value;
+					final MultipartFile mFile = (MultipartFile) value;
 					mMap.add(sKey, new ByteArrayResource(mFile.getBytes()) {
 						
 						@Override
@@ -181,18 +192,19 @@ public class RestTemplateUtil {
 		
 		RestTemplate restTemplate = RestTemplateUtil.getInstance(isSSL);
 		
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders httpHeaders = new HttpHeaders();
+		if (mediaType != null) {
+			httpHeaders.setContentType(mediaType);
+		}
 		
-		headers.setContentType(mediaType);
-		
-		Convert.mapToHttpHeaders(headerMap, headers);
+		MultiValueMap<String, String> headers = Convert.mapToHttpHeaders(headerMap, httpHeaders);
 		
 		HttpEntity<Object> request = new HttpEntity<>(headers);
 			
 		if ( uriVariables != null ) {
-			return (ResponseEntity<Object>) restTemplate.postForEntity(url, request, responseType, uriVariables);
+			return (ResponseEntity<Object>) restTemplate.exchange(url, HttpMethod.GET, request, responseType, uriVariables);
 		} else {
-			return (ResponseEntity<Object>) restTemplate.postForEntity(url, request, responseType);
+			return (ResponseEntity<Object>) restTemplate.exchange(url, HttpMethod.GET, request, responseType);
 		} 
 	}
 	
@@ -209,21 +221,26 @@ public class RestTemplateUtil {
 		
 		RestTemplate restTemplate = RestTemplateUtil.getInstance(isSSL);
 		
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders httpHeaders = new HttpHeaders();
+		if (mediaType != null) {
+			httpHeaders.setContentType(mediaType);
+		}
 		
-		headers.setContentType(mediaType);
-		
-		Convert.mapToHttpHeaders(headerMap, headers);
+		MultiValueMap<String, String> headers = Convert.mapToHttpHeaders(headerMap, httpHeaders);
 		
 		HttpEntity<Object> request = null;
 		MultiValueMap<String, Object> mMap = null;
 		
-		if ( mediaType == null || MediaType.APPLICATION_FORM_URLENCODED.equals(mediaType) || MediaType.MULTIPART_FORM_DATA.equals(mediaType) ) {
-			mMap = Convert.hashMapToMultiValueMap(bodyMap);
-			request = new HttpEntity<>(mMap, headers);
-			
+		if ( bodyMap != null ) {
+			if ( mediaType == null || MediaType.APPLICATION_FORM_URLENCODED.equals(mediaType) || MediaType.MULTIPART_FORM_DATA.equals(mediaType) ) {
+				mMap = Convert.hashMapToMultiValueMap(bodyMap);
+				request = new HttpEntity<>(mMap, headers);
+				
+			} else {
+				request = new HttpEntity<>(bodyMap, headers);
+			}
 		} else {
-			request = new HttpEntity<>(bodyMap, headers);
+			request = new HttpEntity<>(headers);
 		}
 			
 		if ( uriVariables != null ) {

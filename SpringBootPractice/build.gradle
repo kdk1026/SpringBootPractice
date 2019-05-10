@@ -101,7 +101,7 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
 	compile group: 'org.springframework.boot', name: 'spring-boot-starter-validation'
 
-
+	compile("org.springframework.boot:spring-boot-starter-mail")
 
 /* Spring Security */
 	compile("org.springframework.security:spring-security-taglibs") {
