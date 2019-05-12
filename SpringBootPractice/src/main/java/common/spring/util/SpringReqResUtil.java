@@ -18,7 +18,7 @@ public class SpringReqResUtil {
 	}
 	
 	/**
-	 * Java 1.7 Base
+	 * Java 1.7 Base, Spring 4.1.0 Base
 	 * @return
 	 */
 	public static HttpServletResponse getResponse() {
