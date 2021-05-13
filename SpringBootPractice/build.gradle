@@ -1,3 +1,8 @@
+/**
+ * Gradle Version 4.10.2
+ *   - Window > Preferences > Gradle > Specific Gradle version
+ */
+ 
 buildscript {
 	ext {
 		springBootVersion = '1.5.12.RELEASE'
