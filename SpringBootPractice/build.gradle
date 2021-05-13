@@ -66,7 +66,7 @@ configurations {
 }
 
 dependencies {
-	compile group: 'kdk', name: 'CommonJava8', version: '0.1'
+	compile group: 'kdk', name: 'CommonJava8', version: '0.2'
 
 	/* Other Web dependencies */
 	compile group: 'javax.servlet', name: 'jstl'
@@ -146,6 +146,9 @@ dependencies {
 		 exclude module: 'poi'
 		 exclude module: 'poi-ooxml'
 	}
+	
+	// https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
+	compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
 
 	// https://mvnrepository.com/artifact/com.lowagie/itext
 	compile group: 'com.lowagie', name: 'itext', version: '2.1.7'

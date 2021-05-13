@@ -26,7 +26,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 		resMap.put(Constants.RESP.RESP_CD, ResponseCode.ACCESS_DENIED.getCode());
 		resMap.put(Constants.RESP.RESP_MSG, authException.getMessage());
 		
-		String sMessage = JacksonUtil.converterMapToJsonStr(resMap);
+		String sMessage = JacksonUtil.ToJson.converterMapToJsonStr(resMap);
 		
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		ResponseUtil.setJsonResponse(response, sMessage);

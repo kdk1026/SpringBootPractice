@@ -156,9 +156,9 @@ public class ParamMapArgResolver extends LogDeclare implements HandlerMethodArgu
             buffer.close();
 
             if (sb.toString().startsWith("[")) {
-            	paramCollector.put("JSONArray", JacksonUtil.converterJsonStrToList(sb.toString()));
+            	paramCollector.put("JSONArray", JacksonUtil.FromJson.converterJsonStrToList(sb.toString()));
             } else {
-            	Map<String, Object> convertMap = JacksonUtil.converterJsonStrToMap(sb.toString());
+            	Map<String, Object> convertMap = JacksonUtil.FromJson.converterJsonStrToMap(sb.toString());
             	paramCollector.putAll(convertMap);
             }
 

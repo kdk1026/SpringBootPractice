@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import common.LogDeclare;
 import common.spring.resolver.ParamCollector;
-import common.util.RequestIpUtil;
+import common.util.RequestUtil;
 import common.util.map.ResultSetMap;
 import kr.co.test.app.common.Constants;
 import kr.co.test.app.common.ResponseCode;
@@ -59,7 +59,7 @@ public class ManagerServiceImpl extends LogDeclare implements ManagerService {
 
 	@Override
 	public void addManager(ParamCollector paramCollector) {
-		String sIpAddr = RequestIpUtil.getIpAdd(paramCollector.getRequest());
+		String sIpAddr = RequestUtil.getRequestIpAddress(paramCollector.getRequest());
 		paramCollector.put("ipAddr", sIpAddr);
 		
 		String sPwd = paramCollector.getString(Constants.ID_PWD.PASSWORD);

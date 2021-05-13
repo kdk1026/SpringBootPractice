@@ -130,7 +130,7 @@ public class ManagerController extends BaseController {
 		}
 		
 		@SuppressWarnings("unchecked")
-		String sJson = GsonUtil.converterMapToJsonStr(resMap);
+		String sJson = GsonUtil.ToJson.converterMapToJsonStr(resMap);
 		redirectAttributes.addFlashAttribute("vo", sJson);
 		
 		return sUri;
@@ -259,7 +259,7 @@ public class ManagerController extends BaseController {
 		}
 		
 		@SuppressWarnings("unchecked")
-		String sJson = GsonUtil.converterMapToJsonStr(resMap);
+		String sJson = GsonUtil.ToJson.converterMapToJsonStr(resMap);
 		redirectAttributes.addFlashAttribute("vo", sJson);
 		
 		return sUri;

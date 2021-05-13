@@ -25,7 +25,7 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import common.LogDeclare;
 import common.spring.resolver.ParamCollector;
-import common.util.RequestIpUtil;
+import common.util.RequestUtil;
 import common.util.json.GsonUtil;
 import common.util.map.ParamMap;
 import common.util.map.ResultSetMap;
@@ -66,7 +66,7 @@ public class ReqResAspect extends LogDeclare {
 			String sKey = "";
 			String sVal = "";
 			
-			String sRemoteAddr = StringUtils.defaultString(RequestIpUtil.getIpAdd(request));
+			String sRemoteAddr = StringUtils.defaultString(RequestUtil.getRequestIpAddress(request));
 			String sAgent = StringUtils.defaultString(request.getHeader("User-Agent"));
 			String sCookie = "";
 			String sRequestHeader = "";
@@ -81,7 +81,7 @@ public class ReqResAspect extends LogDeclare {
 					cookieMap.put(sKey, sVal);
 				}
 				
-				sCookie = GsonUtil.converterMapToJsonStr(cookieMap);
+				sCookie = GsonUtil.ToJson.converterMapToJsonStr(cookieMap);
 			}
 			
 			Enumeration<?> headerNames = request.getHeaderNames();
@@ -98,13 +98,13 @@ public class ReqResAspect extends LogDeclare {
 			for (String s : sRemoveKeys) {
 				headerMap.remove(s);
 			}
-			sRequestHeader = GsonUtil.converterMapToJsonStr(headerMap);
+			sRequestHeader = GsonUtil.ToJson.converterMapToJsonStr(headerMap);
 			
 			String sUri = StringUtils.defaultString(request.getRequestURI());
 			
 			@SuppressWarnings("unchecked")
 			LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-			String sPathVariable = GsonUtil.converterMapToJsonStr(map);
+			String sPathVariable = GsonUtil.ToJson.converterMapToJsonStr(map);
 			
 	        ParamCollector paramCollector = new ParamCollector();
 	        for (Object obj : args) {
@@ -134,7 +134,7 @@ public class ReqResAspect extends LogDeclare {
 	        	}
 	        }
 	        
-	        String sParameter = GsonUtil.converterMapToJsonStr(newParamMap);
+	        String sParameter = GsonUtil.ToJson.converterMapToJsonStr(newParamMap);
 			
 			logger.info("[{}] Agent - {}", sRemoteAddr, sAgent);
 			logger.info("[{}] Cookie - {}", sRemoteAddr, sCookie);
@@ -153,7 +153,7 @@ public class ReqResAspect extends LogDeclare {
 			ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 			HttpServletRequest request = sra.getRequest();
 			
-			String sRemoteAddr = StringUtils.defaultString(RequestIpUtil.getIpAdd(request));
+			String sRemoteAddr = StringUtils.defaultString(RequestUtil.getRequestIpAddress(request));
 			
 			Object result = jp.proceed();
 			
@@ -161,7 +161,7 @@ public class ReqResAspect extends LogDeclare {
 				ResultSetMap resMap = (ResultSetMap) result;
 				if ( !resMap.isEmpty() ) {
 					@SuppressWarnings("unchecked")
-					String sResponse = GsonUtil.converterMapToJsonStr(resMap);
+					String sResponse = GsonUtil.ToJson.converterMapToJsonStr(resMap);
 					
 					logger.info("[{}] Response - {}", sRemoteAddr, sResponse);
 				}

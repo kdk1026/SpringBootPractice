@@ -1,6 +1,6 @@
 package kr.co.test.app.page.excel.service;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import common.LogDeclare;
 import common.spring.resolver.ParamCollector;
 import common.util.excel.PoiUtil;
+import kr.co.test.app.common.spring.util.Spring4FileUtil;
 
 @Service
 public class ExcelServiceImpl extends LogDeclare implements ExcelService {
@@ -78,9 +79,12 @@ public class ExcelServiceImpl extends LogDeclare implements ExcelService {
 		MultipartFile multipartFile = paramCollector.getMultipartFile("file");
 		
 		try {
-			list = PoiUtil.readExcel(multipartFile.getInputStream(), multipartFile.getOriginalFilename());
+			File file = Spring4FileUtil.multipartFileToFile(multipartFile);
 			
-		} catch (IOException e) {
+			// XXX : 예전 유틸이 사라져서...오류만 일단 없앰
+			list = PoiUtil.readExcel(file, null);
+			
+		} catch (Exception e) {
 			logger.error("", e);
 		}
 		

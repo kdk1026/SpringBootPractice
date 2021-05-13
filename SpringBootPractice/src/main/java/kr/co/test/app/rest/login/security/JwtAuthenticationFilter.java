@@ -73,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		
 		if ( !resMap.isEmpty() ) {
 			@SuppressWarnings("unchecked")
-			String sMessage = JacksonUtil.converterMapToJsonStr(resMap);
+			String sMessage = JacksonUtil.ToJson.converterMapToJsonStr(resMap);
 			
 			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 			response.setCharacterEncoding(Constants.UTF8);

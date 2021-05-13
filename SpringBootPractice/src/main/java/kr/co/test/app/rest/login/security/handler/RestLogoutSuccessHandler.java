@@ -26,7 +26,7 @@ public class RestLogoutSuccessHandler implements LogoutSuccessHandler {
 		resMap.put(Constants.RESP.RESP_CD, ResponseCode.S0000.getCode());
 		resMap.put(Constants.RESP.RESP_MSG, ResponseCode.S0000.getMessage());
 		
-		String sMessage = JacksonUtil.converterMapToJsonStr(resMap);
+		String sMessage = JacksonUtil.ToJson.converterMapToJsonStr(resMap);
 		
 //		response.setStatus(HttpServletResponse.SC_OK);
 		ResponseUtil.setJsonResponse(response, sMessage);

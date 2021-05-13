@@ -54,7 +54,7 @@ public class JsonpController extends LogDeclare {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("name", (sLastName + sFirstName));
 		
-		String sResult = JacksonUtil.converterMapToJsonStr(map);
+		String sResult = JacksonUtil.ToJson.converterMapToJsonStr(map);
 		
 		return sCallback + "(" + sResult + ")";
 	}

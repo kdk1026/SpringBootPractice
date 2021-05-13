@@ -26,7 +26,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
 		resMap.put(Constants.RESP.RESP_CD, ResponseCode.ACCESS_DENIED.getCode());
 		resMap.put(Constants.RESP.RESP_MSG, ResponseCode.ACCESS_DENIED.getMessage());
 		
-		String sMessage = JacksonUtil.converterMapToJsonStr(resMap);
+		String sMessage = JacksonUtil.ToJson.converterMapToJsonStr(resMap);
 		
 		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 		ResponseUtil.setJsonResponse(response, sMessage);
